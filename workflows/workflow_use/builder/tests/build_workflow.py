@@ -7,7 +7,7 @@ from langchain_openai import ChatOpenAI
 from workflow_use.builder.service import BuilderService
 
 # Instantiate the LLM and the service directly
-llm_instance = ChatOpenAI(model='gpt-4o')  # Or your preferred model
+llm_instance = ChatOpenAI(model="ep-20250408215951-6sz96")  # Or your preferred model
 builder_service = BuilderService(llm=llm_instance)
 
 

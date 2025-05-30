@@ -32,15 +32,15 @@ app = typer.Typer(
 # Default LLM instance to None
 llm_instance = None
 try:
-	llm_instance = ChatOpenAI(model='gpt-4o')
-	page_extraction_llm = ChatOpenAI(model='gpt-4o-mini')
+	llm_instance = ChatOpenAI(model='ep-20250408215951-6sz96')
+	page_extraction_llm = ChatOpenAI(model='ep-20250408215951-6sz96')
 except Exception as e:
 	typer.secho(f'Error initializing LLM: {e}. Would you like to set your OPENAI_API_KEY?', fg=typer.colors.RED)
 	set_openai_api_key = input('Set OPENAI_API_KEY? (y/n): ')
 	if set_openai_api_key.lower() == 'y':
 		os.environ['OPENAI_API_KEY'] = input('Enter your OPENAI_API_KEY: ')
-		llm_instance = ChatOpenAI(model='gpt-4o')
-		page_extraction_llm = ChatOpenAI(model='gpt-4o-mini')
+		llm_instance = ChatOpenAI(model='ep-20250408215951-6sz96')
+		page_extraction_llm = ChatOpenAI(model='ep-20250408215951-6sz96')
 
 builder_service = BuilderService(llm=llm_instance) if llm_instance else None
 # recorder_service = RecorderService() # Placeholder

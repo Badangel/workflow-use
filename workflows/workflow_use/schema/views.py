@@ -94,6 +94,13 @@ class PageExtractionStep(TimestampedWorkflowStep):
 	type: Literal['extract_page_content']  # Assumed type for workflow controller's page_extraction
 	goal: str = Field(..., description='The goal of the page extraction.')
 
+class SwitchTabStep(TimestampedWorkflowStep):
+	"""Switches to a tab using'switch_tab' (maps to workflow controller's switch_tab)."""
+	type: Literal['switch_tab']  # Assumed type for workflow controller's switch_tab
+
+class GoBackStep(TimestampedWorkflowStep):
+	"""Goes back to the previous page using 'go_back' (maps to workflow controller's go_back)."""
+	type: Literal['go_back']  # Assumed type for workflow controller's go_back
 
 # --- Union of all possible step types ---
 # This Union defines what constitutes a valid step in the "steps" list.
@@ -105,6 +112,8 @@ DeterministicWorkflowStep = Union[
 	KeyPressStep,
 	ScrollStep,
 	PageExtractionStep,
+	SwitchTabStep,
+	GoBackStep,
 ]
 
 AgenticWorkflowStep = AgentTaskWorkflowStep

@@ -33,7 +33,7 @@ class WorkflowService:
 
 		# LLM / workflow executor
 		try:
-			self.llm_instance = ChatOpenAI(model='gpt-4.1-mini')
+			self.llm_instance = ChatOpenAI(model='ep-20250408215951-6sz96')
 		except Exception as exc:
 			print(f'Error initializing LLM: {exc}. Ensure OPENAI_API_KEY is set.')
 			self.llm_instance = None

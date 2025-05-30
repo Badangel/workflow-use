@@ -30,6 +30,8 @@ from workflow_use.schema.views import (
 	WorkflowDefinitionSchema,
 	WorkflowInputSchemaDefinition,
 	WorkflowStep,
+	SwitchTabStep,
+	GoBackStep,
 )
 from workflow_use.workflow.prompts import STRUCTURED_OUTPUT_PROMPT, WORKFLOW_FALLBACK_PROMPT_TEMPLATE
 from workflow_use.workflow.views import WorkflowRunOutput
@@ -90,6 +92,14 @@ class Workflow:
 		self.inputs_def: List[WorkflowInputSchemaDefinition] = self.schema.input_schema
 		self._input_model: type[BaseModel] = self._build_input_model()
 
+	async def load_cookiles(self, cookie_file_path: str):
+		with open(cookie_file_path, "r") as f:
+			content = f.read()
+			if content:
+				cookies = json.loads(content)
+				for cookie in cookies:
+					cookie['sameSite'] = 'Lax'
+				await self.browser_context.session.context.add_cookies(cookies)
 	# --- Loaders ---
 	@classmethod
 	def load_from_file(
@@ -167,7 +177,7 @@ class Workflow:
 			task=task,
 			llm=self.llm,
 			browser_session=self.browser,
-			use_vision=True,  # Consider making this configurable via WorkflowStep schema
+			use_vision=False,  # Consider making this configurable via WorkflowStep schema
 		)
 		return await agent.run(max_steps=max_steps)
 
@@ -210,6 +220,10 @@ class Workflow:
 			failed_value = f"{description_prefix}Press key: '{step_resolved.key}'"
 		elif isinstance(step_resolved, ScrollStep):
 			failed_value = f'{description_prefix}Scroll to position: (x={step_resolved.scrollX}, y={step_resolved.scrollY})'
+		elif isinstance(step_resolved, SwitchTabStep):
+			failed_value = f"{description_prefix}Switch to tab: {step_resolved.pageId}"
+		elif isinstance(step_resolved, GoBackStep):
+			failed_value = f"{description_prefix}Go back to previous page."
 		else:
 			failed_value = f"{description_prefix}No specific target value available for action '{failed_action_name}'"
 

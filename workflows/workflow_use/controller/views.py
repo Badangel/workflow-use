@@ -79,3 +79,17 @@ class PageExtractionAction(_BaseExtra):
 
 	type: Literal['extract_page_content']
 	goal: str
+
+class SwitchTabAction(_BaseExtra):
+    """Parameters for switching to a tab by ID."""
+    type: Literal["switch_tab"]
+    pageId: int
+
+class NoParamsAction(_BaseExtra):
+    """
+    Accepts absolutely anything in the incoming data
+    and discards it, so the final parsed model is empty.
+    """
+    def ignore_all_inputs(cls, values):
+        # No matter what the user sends, discard it and return empty.
+        return {}

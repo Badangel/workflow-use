@@ -16,6 +16,8 @@ from workflow_use.controller.views import (
 	PageExtractionAction,
 	ScrollDeterministicAction,
 	SelectDropdownOptionDeterministicAction,
+	SwitchTabAction,
+	NoParamsAction,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,12 +30,12 @@ DISABLED_DEFAULT_ACTIONS = [
 	'done',
 	'search_google',
 	'go_to_url',  # I am using this action from the main controller to avoid duplication
-	'go_back',
+	#'go_back',
 	'wait',
 	'click_element_by_index',
 	'input_text',
 	'save_pdf',
-	'switch_tab',
+	#'switch_tab',
 	'open_tab',
 	'close_tab',
 	'extract_content',
@@ -205,8 +207,7 @@ class WorkflowController(Controller):
 			logger.info(msg)
 			return ActionResult(extracted_content=msg, include_in_memory=True)
 
-			# Extract content ------------------------------------------------------------
-
+		# Extract content ------------------------------------------------------------
 		@self.registry.action(
 			'Extract page content to retrieve specific information from the page, e.g. all company names, a specific description, all information about, links with companies in structured format or simply links',
 			param_model=PageExtractionAction,
@@ -239,3 +240,21 @@ class WorkflowController(Controller):
 				msg = f'📄  Extracted from page\n: {content}\n'
 				logger.info(msg)
 				return ActionResult(extracted_content=msg)
+
+		# Tab Management Actions --------------------------------------------------
+		@self.registry.action('Switch tab', param_model=SwitchTabAction)
+		async def switch_tab(params: SwitchTabAction, browser_session: Browser) -> ActionResult:
+			await browser_session.switch_to_tab(params.pageId)
+			# Wait for tab to be ready
+			page = await browser_session.get_current_page()
+			await page.wait_for_load_state()
+			msg = f'🔄  Switched to tab {params.pageId}'
+			logger.info(msg)
+			return ActionResult(extracted_content=msg, include_in_memory=True)
+
+		@self.registry.action('Go back', param_model=NoParamsAction)
+		async def go_back(_: NoParamsAction, browser_session: Browser):
+			await browser_session.go_back()
+			msg = '🔙  Navigated back'
+			logger.info(msg)
+			return ActionResult(extracted_content=msg, include_in_memory=True)
