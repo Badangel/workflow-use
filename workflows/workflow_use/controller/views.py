@@ -79,6 +79,7 @@ class PageExtractionAction(_BaseExtra):
 
 	type: Literal['extract_page_content']
 	goal: str
+	cssSelector: Optional[str] = None
 
 class SwitchTabAction(_BaseExtra):
     """Parameters for switching to a tab by ID."""

@@ -216,6 +216,15 @@ class WorkflowController(Controller):
 			params: PageExtractionAction, browser_session: Browser, page_extraction_llm: BaseChatModel
 		):
 			page = await browser_session.get_current_page()
+			if params.cssSelector:
+				locator = page.locator(params.cssSelector)
+				content = await locator.inner_text()
+				logger.info(f"extract_page_content css context: {content}")
+				return ActionResult(extracted_content=content, include_in_memory=True)
+			if params.xpath:
+				locator = page.locator(params.xpath)
+				content = await locator.inner_text()
+				logger.info(f"extract_page_content xpath context: {content}")
 			import markdownify
 
 			strip = ['a', 'img']
@@ -228,18 +237,19 @@ class WorkflowController(Controller):
 					content += f'\n\nIFRAME {iframe.url}:\n'
 					content += markdownify.markdownify(await iframe.content())
 
-			prompt = 'Your task is to extract the content of the page. You will be given a page and a goal and you should extract all relevant information around this goal from the page. If the goal is vague, summarize the page. Respond in json format. Extraction goal: {goal}, Page: {page}'
-			template = PromptTemplate(input_variables=['goal', 'page'], template=prompt)
-			try:
-				output = await page_extraction_llm.ainvoke(template.format(goal=params.goal, page=content))
-				msg = f'📄  Extracted from page\n: {output.content}\n'
-				logger.info(msg)
-				return ActionResult(extracted_content=msg, include_in_memory=True)
-			except Exception as e:
-				logger.debug(f'Error extracting content: {e}')
-				msg = f'📄  Extracted from page\n: {content}\n'
-				logger.info(msg)
-				return ActionResult(extracted_content=msg)
+			return ActionResult(extracted_content=content, include_in_memory=True)
+			# prompt = 'Your task is to extract the content of the page. You will be given a page and a goal and you should extract all relevant information around this goal from the page. If the goal is vague, summarize the page. Respond in json format. Extraction goal: {goal}, Page: {page}'
+			# template = PromptTemplate(input_variables=['goal', 'page'], template=prompt)
+			# try:
+			# 	output = await page_extraction_llm.ainvoke(template.format(goal=params.goal, page=content))
+			# 	msg = f'📄  Extracted from page\n: {output.content}\n'
+			# 	logger.info(msg)
+			# 	return ActionResult(extracted_content=msg, include_in_memory=True)
+			# except Exception as e:
+			# 	logger.debug(f'Error extracting content: {e}')
+			# 	msg = f'📄  Extracted from page\n: {content}\n'
+			# 	logger.info(msg)
+			# 	return ActionResult(extracted_content=msg)
 
 		# Tab Management Actions --------------------------------------------------
 		@self.registry.action('Switch tab', param_model=SwitchTabAction)
@@ -258,3 +268,12 @@ class WorkflowController(Controller):
 			msg = '🔙  Navigated back'
 			logger.info(msg)
 			return ActionResult(extracted_content=msg, include_in_memory=True)
+
+		# wait for x seconds
+		@self.registry.action('Wait for x seconds default 3', param_model=int)
+		async def wait(seconds: int = 3):
+			msg = f'🕒  Waiting for {seconds} seconds'
+			logger.info(msg)
+			await asyncio.sleep(seconds)
+			return ActionResult(extracted_content=msg, include_in_memory=True)
+

@@ -32,6 +32,7 @@ from workflow_use.schema.views import (
 	WorkflowStep,
 	SwitchTabStep,
 	GoBackStep,
+	WaitStep,
 )
 from workflow_use.workflow.prompts import STRUCTURED_OUTPUT_PROMPT, WORKFLOW_FALLBACK_PROMPT_TEMPLATE
 from workflow_use.workflow.views import WorkflowRunOutput
@@ -224,6 +225,8 @@ class Workflow:
 			failed_value = f"{description_prefix}Switch to tab: {step_resolved.pageId}"
 		elif isinstance(step_resolved, GoBackStep):
 			failed_value = f"{description_prefix}Go back to previous page."
+		elif isinstance(step_resolved, WaitStep):
+			failed_value = f"{description_prefix}Wait for {step_resolved.seconds} seconds."
 		else:
 			failed_value = f"{description_prefix}No specific target value available for action '{failed_action_name}'"
 
