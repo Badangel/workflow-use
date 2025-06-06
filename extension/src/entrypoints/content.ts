@@ -1,5 +1,6 @@
 import * as rrweb from "rrweb";
 import { EventType, IncrementalSource } from "@rrweb/types";
+import { finder } from '@medv/finder';
 
 let stopRecording: (() => void) | undefined = undefined;
 let isRecordingActive = true; // Content script's local state
@@ -64,51 +65,46 @@ const SAFE_ATTRIBUTES = new Set([
   "data-testid",
 ]);
 
-function getEnhancedCSSSelector(element: HTMLElement, xpath: string): string {
-  try {
-    // Base selector from simplified XPath or just tagName
-    let cssSelector = element.tagName.toLowerCase();
+function getEnhancedCSSSelector(element: HTMLElement): string {
+  // Base selector from simplified XPath or just tagName
+  let cssSelector = element.tagName.toLowerCase();
 
-    // Handle class attributes
-    if (element.classList && element.classList.length > 0) {
-      const validClassPattern = /^[a-zA-Z_][a-zA-Z0-9_-]*$/;
-      element.classList.forEach((className) => {
-        if (className && validClassPattern.test(className)) {
-          cssSelector += `.${CSS.escape(className)}`;
-        }
-      });
-    }
+  // Handle class attributes
+  if (element.classList && element.classList.length > 0) {
+    const validClassPattern = /^[a-zA-Z_][a-zA-Z0-9_-]*$/;
+    element.classList.forEach((className) => {
+      if (className && validClassPattern.test(className)) {
+        cssSelector += `.${CSS.escape(className)}`;
+      }
+    });
+  }
 
-    // Handle other safe attributes
-    for (const attr of element.attributes) {
-      const attrName = attr.name;
-      const attrValue = attr.value;
+  // Handle other safe attributes
+  for (const attr of element.attributes) {
+    const attrName = attr.name;
+    const attrValue = attr.value;
 
-      if (attrName === "class") continue;
-      if (!attrName.trim()) continue;
-      if (!SAFE_ATTRIBUTES.has(attrName)) continue;
+    if (attrName === "class") continue;
+    if (!attrName.trim()) continue;
+    if (!SAFE_ATTRIBUTES.has(attrName)) continue;
 
-      const safeAttribute = CSS.escape(attrName);
+    const safeAttribute = CSS.escape(attrName);
 
-      if (attrValue === "") {
-        cssSelector += `[${safeAttribute}]`;
+    if (attrValue === "") {
+      cssSelector += `[${safeAttribute}]`;
+    } else {
+      const safeValue = attrValue.replace(/"/g, '"');
+      if (/["'<>`\s]/.test(attrValue)) {
+        cssSelector += `[${safeAttribute}*="${safeValue}"]`;
       } else {
-        const safeValue = attrValue.replace(/"/g, '"');
-        if (/["'<>`\s]/.test(attrValue)) {
-          cssSelector += `[${safeAttribute}*="${safeValue}"]`;
-        } else {
-          cssSelector += `[${safeAttribute}="${safeValue}"]`;
-        }
+        cssSelector += `[${safeAttribute}="${safeValue}"]`;
       }
     }
-    return cssSelector;
-  } catch (error) {
-    console.error("Error generating enhanced CSS selector:", error);
-    return `${element.tagName.toLowerCase()}[xpath="${xpath.replace(
-      /"/g,
-      '"'
-    )}"]`;
   }
+  if (element.parentElement && element.parentElement !== document.body) {
+    cssSelector = `${getEnhancedCSSSelector(element.parentElement as HTMLElement)}  >  ${cssSelector}`
+  }
+  return cssSelector;
 }
 
 function startRecorder() {
@@ -121,7 +117,11 @@ function startRecorder() {
   stopRecording = rrweb.record({
     emit(event) {
       if (!isRecordingActive) return;
-
+      if(event.type === EventType.IncrementalSnapshot
+        && [IncrementalSource.Input, IncrementalSource.Drag, IncrementalSource.Scroll, IncrementalSource.MouseInteraction].includes(event.data.source)
+      ) {
+        console.log("incremental snapshot event", event)
+      }
       // Handle scroll events with debouncing and direction detection
       if (
         event.type === EventType.IncrementalSnapshot &&
@@ -185,6 +185,7 @@ function startRecorder() {
           lastDirection = null; // Reset direction for next scroll
         }, DEBOUNCE_MS);
       } else {
+        console.log("debugger event", event)
         // Pass through non-scroll events unchanged
         chrome.runtime.sendMessage({ type: "RRWEB_EVENT", payload: event });
       }
@@ -247,7 +248,8 @@ function handleCustomClick(event: MouseEvent) {
       url: document.location.href, // Use document.location for main page URL
       frameUrl: window.location.href, // URL of the frame where the event occurred
       xpath: xpath,
-      cssSelector: getEnhancedCSSSelector(targetElement, xpath),
+      cssSelector: getEnhancedCSSSelector(targetElement),
+      cssSelectorSimple: finder(targetElement),
       elementTag: targetElement.tagName,
       elementText: targetElement.textContent?.trim().slice(0, 200) || "",
     };
@@ -276,7 +278,8 @@ function handleInput(event: Event) {
       url: document.location.href,
       frameUrl: window.location.href,
       xpath: xpath,
-      cssSelector: getEnhancedCSSSelector(targetElement, xpath),
+      cssSelector: getEnhancedCSSSelector(targetElement),
+      cssSelectorSimple: finder(targetElement),
       elementTag: targetElement.tagName,
       value: isPassword ? "********" : targetElement.value,
     };
@@ -306,7 +309,8 @@ function handleSelectChange(event: Event) {
       url: document.location.href,
       frameUrl: window.location.href,
       xpath: xpath,
-      cssSelector: getEnhancedCSSSelector(targetElement, xpath),
+      cssSelector: getEnhancedCSSSelector(targetElement),
+      cssSelectorSimple: finder(targetElement),
       elementTag: targetElement.tagName,
       selectedValue: targetElement.value,
       selectedText: selectedOption ? selectedOption.text : "", // Get selected option text
@@ -370,7 +374,8 @@ function handleKeydown(event: KeyboardEvent) {
     if (targetElement && typeof targetElement.tagName === "string") {
       try {
         xpath = getXPath(targetElement);
-        cssSelector = getEnhancedCSSSelector(targetElement, xpath);
+        cssSelector = getEnhancedCSSSelector(targetElement);
+        cssSelectorSimple: finder(targetElement),
         elementTag = targetElement.tagName;
       } catch (e) {
         console.error("Error getting selector for keydown target:", e);
@@ -385,6 +390,7 @@ function handleKeydown(event: KeyboardEvent) {
         key: keyToLog, // The key or combination pressed
         xpath: xpath, // XPath of the element in focus (if any)
         cssSelector: cssSelector, // CSS selector of the element in focus (if any)
+        cssSelectorSimple: finder(targetElement),
         elementTag: elementTag, // Tag name of the element in focus
       };
       console.log("Sending CUSTOM_KEY_EVENT:", keyData);
@@ -427,7 +433,7 @@ function handleMouseOver(event: MouseEvent) {
       null
     ).singleNodeValue as HTMLElement | null;
     if (!elementToHighlight) {
-      const enhancedSelector = getEnhancedCSSSelector(targetElement, xpath);
+      const enhancedSelector = getEnhancedCSSSelector(targetElement);
       console.log("CSS Selector:", enhancedSelector);
       const elements = document.querySelectorAll<HTMLElement>(enhancedSelector);
 
@@ -505,7 +511,7 @@ function handleFocus(event: FocusEvent) {
       null
     ).singleNodeValue as HTMLElement | null;
     if (!elementToHighlight) {
-      const enhancedSelector = getEnhancedCSSSelector(targetElement, xpath);
+      const enhancedSelector = getEnhancedCSSSelector(targetElement);
       elementToHighlight = document.querySelector(enhancedSelector);
     }
     if (elementToHighlight) {

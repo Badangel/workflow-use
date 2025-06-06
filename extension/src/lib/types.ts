@@ -4,6 +4,7 @@ export interface StoredCustomClickEvent {
   frameUrl: string;
   xpath: string;
   cssSelector?: string;
+  cssSelectorSimple?: string;
   elementTag: string;
   elementText: string;
   tabId: number;
@@ -17,6 +18,7 @@ export interface StoredCustomInputEvent {
   frameUrl: string;
   xpath: string;
   cssSelector?: string;
+  cssSelectorSimple?: string;
   elementTag: string;
   value: string;
   tabId: number;
@@ -30,6 +32,7 @@ export interface StoredCustomSelectEvent {
   frameUrl: string;
   xpath: string;
   cssSelector?: string;
+  cssSelectorSimple?: string;
   elementTag: string;
   selectedValue: string;
   selectedText: string;
@@ -45,6 +48,7 @@ export interface StoredCustomKeyEvent {
   key: string;
   xpath?: string; // XPath of focused element
   cssSelector?: string;
+  cssSelectorSimple?: string;
   elementTag?: string;
   tabId: number;
   messageType: "CUSTOM_KEY_EVENT";

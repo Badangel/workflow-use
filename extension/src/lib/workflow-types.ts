@@ -35,6 +35,7 @@ export interface ClickStep extends BaseStep {
   frameUrl: string;
   xpath: string;
   cssSelector?: string; // Optional in source
+  cssSelectorSimple?: string; // Optional in source
   elementTag: string;
   elementText: string;
   screenshot?: string; // Optional in source
@@ -46,6 +47,7 @@ export interface InputStep extends BaseStep {
   frameUrl: string;
   xpath: string;
   cssSelector?: string; // Optional in source
+  cssSelectorSimple?: string; // Optional in source
   elementTag: string;
   value: string;
   screenshot?: string; // Optional in source
@@ -58,6 +60,7 @@ export interface KeyPressStep extends BaseStep {
   key: string;
   xpath?: string; // Optional in source
   cssSelector?: string; // Optional in source
+  cssSelectorSimple?: string; // Optional in source
   elementTag?: string; // Optional in source
   screenshot?: string; // Optional in source
 }

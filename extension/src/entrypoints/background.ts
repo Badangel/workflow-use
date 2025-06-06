@@ -234,6 +234,7 @@ export default defineBackground(() => {
               frameUrl: clickEvent.frameUrl,
               xpath: clickEvent.xpath,
               cssSelector: clickEvent.cssSelector,
+              cssSelectorSimple: clickEvent.cssSelectorSimple,
               elementTag: clickEvent.elementTag,
               elementText: clickEvent.elementText,
               screenshot: clickEvent.screenshot,
@@ -280,6 +281,7 @@ export default defineBackground(() => {
                 frameUrl: inputEvent.frameUrl,
                 xpath: inputEvent.xpath,
                 cssSelector: inputEvent.cssSelector,
+                cssSelectorSimple: inputEvent.cssSelectorSimple,
                 elementTag: inputEvent.elementTag,
                 value: inputEvent.value,
                 screenshot: inputEvent.screenshot,
@@ -306,6 +308,7 @@ export default defineBackground(() => {
               key: keyEvent.key,
               xpath: keyEvent.xpath,
               cssSelector: keyEvent.cssSelector,
+              cssSelectorSimple: keyEvent.cssSelectorSimple,
               elementTag: keyEvent.elementTag,
               screenshot: keyEvent.screenshot,
             };

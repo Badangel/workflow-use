@@ -15,10 +15,12 @@
     "postinstall": "wxt prepare"
   },
   "dependencies": {
+    "@medv/finder": "^4.0.2",
     "@radix-ui/react-slot": "^1.2.0",
     "@tailwindcss/vite": "^4.1.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "css-selector-generator": "^3.6.9",
     "lucide-react": "^0.507.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

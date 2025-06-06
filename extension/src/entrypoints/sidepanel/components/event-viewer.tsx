@@ -133,6 +133,11 @@ const StepCard: React.FC<{
                 <strong>CSS:</strong> {s.cssSelector}
               </p>
             )}
+            {s.cssSelectorSimple && (
+              <p>
+                <strong>CSS Simple:</strong> {s.cssSelectorSimple}
+              </p>
+            )}
             {s.elementTag && (
               <p>
                 <strong>Element:</strong> {s.elementTag}
