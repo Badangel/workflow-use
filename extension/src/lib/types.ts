@@ -55,6 +55,20 @@ export interface StoredCustomKeyEvent {
   screenshot?: string;
 }
 
+export interface StoredCustomTextSelectEvent {
+  timestamp: number;
+  url: string;
+  frameUrl: string;
+  xpath: string;
+  cssSelector?: string;
+  cssSelectorSimple?: string;
+  elementTag: string;
+  selectedText: string;
+  tabId: number;
+  messageType: "CUSTOM_TEXT_SELECT_EVENT";
+  screenshot?: string;
+}
+
 export interface StoredTabEvent {
   timestamp: number;
   tabId: number;
@@ -85,6 +99,7 @@ export type StoredEvent =
   | StoredCustomInputEvent
   | StoredCustomSelectEvent
   | StoredCustomKeyEvent
+  | StoredCustomTextSelectEvent // Added StoredCustomTextSelectEvent
   | StoredTabEvent
   | StoredRrwebEvent;
 

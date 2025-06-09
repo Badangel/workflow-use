@@ -4,6 +4,7 @@ import {
   StoredCustomClickEvent,
   StoredCustomInputEvent,
   StoredCustomKeyEvent,
+  StoredCustomTextSelectEvent,
   StoredEvent,
   StoredRrwebEvent,
 } from "../lib/types";
@@ -14,6 +15,7 @@ import {
   NavigationStep,
   ScrollStep,
   Step,
+  TextSelectStep,
   Workflow,
 } from "../lib/workflow-types";
 import {
@@ -318,7 +320,34 @@ export default defineBackground(() => {
           }
           break;
         }
-
+        case "CUSTOM_TEXT_SELECT_EVENT": {
+          const textSelectEvent = event as StoredCustomTextSelectEvent;
+          // Ensure required fields are present
+          if (
+            textSelectEvent.url &&
+            textSelectEvent.xpath &&
+            textSelectEvent.elementTag &&
+            typeof textSelectEvent.selectedText === 'string'
+          ) {
+            const step: TextSelectStep = {
+              type: "text_select",
+              timestamp: textSelectEvent.timestamp,
+              tabId: textSelectEvent.tabId,
+              url: textSelectEvent.url,
+              frameUrl: textSelectEvent.frameUrl,
+              xpath: textSelectEvent.xpath,
+              cssSelector: textSelectEvent.cssSelector,
+              cssSelectorSimple: textSelectEvent.cssSelectorSimple,
+              elementTag: textSelectEvent.elementTag,
+              selectedText: textSelectEvent.selectedText,
+              screenshot: textSelectEvent.screenshot,
+            };
+            steps.push(step);
+          } else {
+            console.warn("Skipping incomplete CUSTOM_TEXT_SELECT_EVENT:", textSelectEvent);
+          }
+          break;
+        }
         case "RRWEB_EVENT": {
           // We only care about scroll events from rrweb for now
           const rrEvent = event as StoredRrwebEvent;
@@ -399,6 +428,7 @@ export default defineBackground(() => {
       "CUSTOM_INPUT_EVENT",
       "CUSTOM_SELECT_EVENT",
       "CUSTOM_KEY_EVENT",
+      "CUSTOM_TEXT_SELECT_EVENT",
     ];
     if (
       message.type === "RRWEB_EVENT" ||

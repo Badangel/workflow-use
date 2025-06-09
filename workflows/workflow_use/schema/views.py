@@ -49,6 +49,12 @@ class ClickStep(TimestampedWorkflowStep):
 	elementTag: Optional[str] = Field(None, description='HTML tag (informational).')
 	elementText: Optional[str] = Field(None, description='Element text (informational).')
 
+class TextSelectStep(TimestampedWorkflowStep):
+	type: Literal['text_select']  # As seen in examples
+	cssSelector: str = Field(..., description='CSS selector for the target element.')
+	xpath: Optional[str] = Field(None, description='XPath selector (often informational).')
+	elementTag: Optional[str] = Field(None, description='HTML tag (informational).')
+	elementText: Optional[str] = Field(None, description='Element text (informational).')
 
 class InputStep(TimestampedWorkflowStep):
 	"""Inputs text using 'input' (maps to workflow controller's input)."""
@@ -117,6 +123,7 @@ DeterministicWorkflowStep = Union[
 	SelectChangeStep,
 	KeyPressStep,
 	ScrollStep,
+	TextSelectStep,
 	PageExtractionStep,
 	SwitchTabStep,
 	GoBackStep,

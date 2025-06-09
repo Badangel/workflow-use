@@ -5,6 +5,7 @@ import {
   KeyPressStep,
   NavigationStep,
   ScrollStep,
+  TextSelectStep, // Added
   Step,
 } from "../../../lib/workflow-types"; // Adjust path as needed
 import { useWorkflow } from "../context/workflow-provider";
@@ -25,7 +26,7 @@ const StepCard: React.FC<{
   onSelect: () => void;
 }> = ({ step, index, isSelected, onSelect }) => {
   const screenshot = getScreenshot(step);
-  const canShowScreenshot = ["click", "input", "key_press"].includes(step.type);
+  const canShowScreenshot = ["click", "input", "key_press", "text_select"].includes(step.type);
 
   // --- Step Summary Renderer (Top part of the card) ---
   const renderStepSummary = (step: Step) => {
@@ -60,6 +61,18 @@ const StepCard: React.FC<{
             <span className="text-lg">🔑</span>
             <span className="truncate">
               Press <strong>{s.key}</strong> on {s.elementTag || "document"}
+            </span>
+          </div>
+        );
+      }
+      case "text_select": {
+        // Added
+        const s = step as TextSelectStep;
+        return (
+          <div className="flex items-center space-x-2">
+            <span className="text-lg">📄</span>
+            <span className="truncate">
+              Select text on <strong>{s.elementTag}</strong>: "{s.selectedText}"
             </span>
           </div>
         );
@@ -112,8 +125,9 @@ const StepCard: React.FC<{
     switch (step.type) {
       case "click":
       case "input":
-      case "key_press": {
-        const s = step as ClickStep | InputStep | KeyPressStep; // Union type
+      case "key_press":
+      case "text_select": {
+        const s = step as ClickStep | InputStep | KeyPressStep | TextSelectStep; // Union type
         specificInfo = (
           <>
             {(s as ClickStep | InputStep).frameUrl &&
@@ -156,6 +170,12 @@ const StepCard: React.FC<{
             {(s as KeyPressStep).key && (
               <p>
                 <strong>Key:</strong> {(s as KeyPressStep).key}
+              </p>
+            )}
+            {(s as TextSelectStep).cssSelectorSimple && ( // Added for text_select
+              <p>
+                <strong>Selected DOM:</strong>{" "}
+                {(s as TextSelectStep).cssSelectorSimple}
               </p>
             )}
           </>

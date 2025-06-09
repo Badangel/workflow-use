@@ -1,6 +1,7 @@
 import * as rrweb from "rrweb";
 import { EventType, IncrementalSource } from "@rrweb/types";
 import { finder } from '@medv/finder';
+import { getSelectionDOM } from "@/lib/dom";
 
 let stopRecording: (() => void) | undefined = undefined;
 let isRecordingActive = true; // Content script's local state
@@ -206,6 +207,7 @@ function startRecorder() {
   document.addEventListener("click", handleCustomClick, true);
   document.addEventListener("input", handleInput, true);
   document.addEventListener("change", handleSelectChange, true);
+  document.addEventListener("mouseup", handleMouseUpForTextSelect, true); // Changed from selectionchange
   document.addEventListener("keydown", handleKeydown, true);
   document.addEventListener("mouseover", handleMouseOver, true);
   document.addEventListener("mouseout", handleMouseOut, true);
@@ -225,6 +227,7 @@ function stopRecorder() {
     document.removeEventListener("click", handleCustomClick, true);
     document.removeEventListener("input", handleInput, true);
     document.removeEventListener("change", handleSelectChange, true); // Remove change listener
+    document.removeEventListener("mouseup", handleMouseUpForTextSelect, true); // Remove mouseup listener
     document.removeEventListener("keydown", handleKeydown, true); // Remove keydown listener
     document.removeEventListener("mouseover", handleMouseOver, true);
     document.removeEventListener("mouseout", handleMouseOut, true);
@@ -325,6 +328,45 @@ function handleSelectChange(event: Event) {
   }
 }
 // --- End Custom Select Change Handler ---
+
+// --- Text Selection Handler (on mouse up) ---
+function handleMouseUpForTextSelect(event: MouseEvent) {
+  if (!isRecordingActive) return;
+  const selection = window.getSelection();
+  if (!selection || selection.isCollapsed || selection.rangeCount === 0) {
+    return; // No text selected or selection is empty
+  }
+  const targetElement = getSelectionDOM() as HTMLElement;
+  if (!targetElement) return;
+  // Check if the mouseup event target is within the selected text's common ancestor
+  // This helps to avoid triggering if mouseup happens outside the selection area
+  // but a selection still exists.
+  if (!targetElement.contains(event.target as Node)) {
+    // A more precise check might be needed depending on getSelectionDOM behavior
+    // For now, let's assume if targetElement is valid, it's fine.
+  }
+  try {
+    const xpath = getXPath(targetElement);
+    const textSelectData = {
+      timestamp: Date.now(),
+      url: document.location.href,
+      frameUrl: window.location.href,
+      xpath: xpath,
+      cssSelector: getEnhancedCSSSelector(targetElement),
+      cssSelectorSimple: finder(targetElement),
+      elementTag: targetElement.tagName,
+      selectedText: selection.toString(), // Capture the selected text
+    };
+    console.log("Sending CUSTOM_TEXT_SELECT_EVENT (on mouseup):", textSelectData);
+    chrome.runtime.sendMessage({
+      type: "CUSTOM_TEXT_SELECT_EVENT",
+      payload: textSelectData,
+    });
+  } catch (error) {
+    console.error("Error capturing text select data on mouseup:", error);
+  }
+}
+// --- End Text Selection Handler ---
 
 // --- Custom Keydown Handler ---
 // Set of keys we want to capture explicitly
@@ -599,6 +641,7 @@ export default defineContentScript({
       document.removeEventListener("click", handleCustomClick, true);
       document.removeEventListener("input", handleInput, true);
       document.removeEventListener("change", handleSelectChange, true);
+      document.removeEventListener("mouseup", handleMouseUpForTextSelect, true); // Changed from selectionchange
       document.removeEventListener("keydown", handleKeydown, true);
       document.removeEventListener("mouseover", handleMouseOver, true);
       document.removeEventListener("mouseout", handleMouseOut, true);

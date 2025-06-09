@@ -13,7 +13,8 @@ export type Step =
   | ClickStep
   | InputStep
   | KeyPressStep
-  | ScrollStep;
+  | ScrollStep
+  | TextSelectStep; // Added TextSelectStep;
 // Add other step types here as needed, e.g., SelectStep, TabCreatedStep etc.
 
 export interface BaseStep {
@@ -71,6 +72,18 @@ export interface ScrollStep extends BaseStep {
   scrollX: number;
   scrollY: number;
   // Note: url might be missing if scroll happens on initial load before meta event?
+}
+
+export interface TextSelectStep extends BaseStep {
+  type: "text_select";
+  url: string;
+  frameUrl: string;
+  xpath: string;
+  cssSelector?: string;
+  cssSelectorSimple?: string;
+  elementTag: string;
+  selectedText: string;
+  screenshot?: string;
 }
 
 // Potential future step types based on StoredEvent
