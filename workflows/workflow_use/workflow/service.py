@@ -33,6 +33,7 @@ from workflow_use.schema.views import (
 	SwitchTabStep,
 	GoBackStep,
 	WaitStep,
+	TextSelectStep,
 )
 from workflow_use.workflow.prompts import STRUCTURED_OUTPUT_PROMPT, WORKFLOW_FALLBACK_PROMPT_TEMPLATE
 from workflow_use.workflow.views import WorkflowRunOutput

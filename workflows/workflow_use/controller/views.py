@@ -13,8 +13,8 @@ class _BaseExtra(BaseModel):
 
 # Mixin for shared step metadata (timestamp and tab context)
 class StepMeta(_BaseExtra):
-	timestamp: int
-	tabId: int
+	timestamp: Optional[int] = None
+	tabId: Optional[int] = None
 
 
 # Common optional fields present in recorder events
@@ -78,7 +78,6 @@ class PageExtractionAction(_BaseExtra):
 	"""Parameters for extracting content from the page."""
 
 	type: Literal['extract_page_content']
-	goal: str
 	cssSelector: Optional[str] = None
 
 class SwitchTabAction(_BaseExtra):
@@ -94,3 +93,9 @@ class NoParamsAction(_BaseExtra):
     def ignore_all_inputs(cls, values):
         # No matter what the user sends, discard it and return empty.
         return {}
+
+class TextSelectAction(_BaseExtra):
+	"""Parameters for text extracting content from the page."""
+
+	type: Literal['text_select']
+	cssSelector: Optional[str] = None

@@ -18,6 +18,7 @@ from workflow_use.controller.views import (
 	SelectDropdownOptionDeterministicAction,
 	SwitchTabAction,
 	NoParamsAction,
+	TextSelectAction,
 )
 
 logger = logging.getLogger(__name__)
@@ -277,3 +278,27 @@ class WorkflowController(Controller):
 			await asyncio.sleep(seconds)
 			return ActionResult(extracted_content=msg, include_in_memory=True)
 
+		# Text Select Action 
+		@self.registry.action(
+			'Extract text from page by all available selectors',
+			param_model=TextSelectAction,
+		)
+		async def text_select(params: TextSelectAction, browser_session: Browser) -> ActionResult:
+			"""Extract text from the page identified by *params.cssSelector*."""
+			page = await browser_session.get_current_page()
+			original_selector = params.cssSelector
+			try:
+				locator, selector_used = await get_best_element_handle(
+					page,
+					params.cssSelector,
+					params,
+					timeout_ms=DEFAULT_ACTION_TIMEOUT_MS,
+				)
+				text = await locator.inner_text()
+				msg = f'📝  Extracted text from element with CSS selector: {truncate_selector(selector_used)} (original: {truncate_selector(original_selector)})'
+				logger.info(msg)
+				return ActionResult(extracted_content=text, include_in_memory=True)
+			except Exception as e:
+				error_msg = f'Failed to extract text. Original selector: {truncate_selector(original_selector)}. Error: {str(e)}'
+				logger.error(error_msg)
+				raise Exception(error_msg)

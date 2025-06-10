@@ -48,6 +48,8 @@ class ClickStep(TimestampedWorkflowStep):
 	xpath: Optional[str] = Field(None, description='XPath selector (often informational).')
 	elementTag: Optional[str] = Field(None, description='HTML tag (informational).')
 	elementText: Optional[str] = Field(None, description='Element text (informational).')
+	cssSelectorSimple: Optional[str] = Field(None, description='CSS simple selector for the target element.')
+
 
 class TextSelectStep(TimestampedWorkflowStep):
 	type: Literal['text_select']  # As seen in examples
@@ -55,6 +57,8 @@ class TextSelectStep(TimestampedWorkflowStep):
 	xpath: Optional[str] = Field(None, description='XPath selector (often informational).')
 	elementTag: Optional[str] = Field(None, description='HTML tag (informational).')
 	elementText: Optional[str] = Field(None, description='Element text (informational).')
+	cssSelectorSimple: Optional[str] = Field(None, description='CSS simple selector for the target element.')
+
 
 class InputStep(TimestampedWorkflowStep):
 	"""Inputs text using 'input' (maps to workflow controller's input)."""
@@ -64,6 +68,7 @@ class InputStep(TimestampedWorkflowStep):
 	value: str = Field(..., description='Value to input. Can use {context_var}.')
 	xpath: Optional[str] = Field(None, description='XPath selector (informational).')
 	elementTag: Optional[str] = Field(None, description='HTML tag (informational).')
+	cssSelectorSimple: Optional[str] = Field(None, description='CSS simple selector for the target element.')
 
 
 class SelectChangeStep(TimestampedWorkflowStep):
@@ -74,6 +79,7 @@ class SelectChangeStep(TimestampedWorkflowStep):
 	selectedText: str = Field(..., description='Visible text of the option to select. Can use {context_var}.')
 	xpath: Optional[str] = Field(None, description='XPath selector (informational).')
 	elementTag: Optional[str] = Field(None, description='HTML tag (informational).')
+	cssSelectorSimple: Optional[str] = Field(None, description='CSS simple selector for the target element.')
 
 
 class KeyPressStep(TimestampedWorkflowStep):
@@ -84,6 +90,7 @@ class KeyPressStep(TimestampedWorkflowStep):
 	key: str = Field(..., description="The key to press (e.g., 'Tab', 'Enter').")
 	xpath: Optional[str] = Field(None, description='XPath selector (informational).')
 	elementTag: Optional[str] = Field(None, description='HTML tag (informational).')
+	cssSelectorSimple: Optional[str] = Field(None, description='CSS simple selector for the target element.')
 
 
 class ScrollStep(TimestampedWorkflowStep):
@@ -100,14 +107,18 @@ class PageExtractionStep(TimestampedWorkflowStep):
 	type: Literal['extract_page_content']  # Assumed type for workflow controller's page_extraction
 	goal: str = Field(..., description='The goal of the page extraction.')
 	cssSelector: Optional[str] = Field(None, description='CSS selector for the target element.')
+	cssSelectorSimple: Optional[str] = Field(None, description='CSS simple selector for the target element.')
+
 
 class SwitchTabStep(TimestampedWorkflowStep):
 	"""Switches to a tab using'switch_tab' (maps to workflow controller's switch_tab)."""
 	type: Literal['switch_tab']  # Assumed type for workflow controller's switch_tab
 
+
 class GoBackStep(TimestampedWorkflowStep):
 	"""Goes back to the previous page using 'go_back' (maps to workflow controller's go_back)."""
 	type: Literal['go_back']  # Assumed type for workflow controller's go_back
+
 
 class WaitStep(TimestampedWorkflowStep):
 	"""Waits for a specified number of seconds using 'wait' (maps to workflow controller's wait)."""
